@@ -1,0 +1,21 @@
+:root {
+  --main-color: #e3a17c;
+  --main-light: #f4d4c1;
+  --main-dark: #b66131;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body,
+html {
+  width: 100%;
+  height: 100%;
+  background-color: var(--main-light);
+}
+ul,
+li {
+  list-style: none;
+}
