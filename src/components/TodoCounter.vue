@@ -1,0 +1,183 @@
+<template>
+  <section class="todo-counter">
+    <h1 class="title">面試</h1>
+    <div class="counter">
+      <div class="tomato">
+        <input
+          v-model="hour"
+          type="number"
+          min="0"
+          max="23"
+          @blur="hour ? (hour = hour) : (hour = 0)"
+        />
+        <input
+          v-model="minute"
+          type="number"
+          min="0"
+          max="59"
+          @blur="minute ? (minute = minute) : (minute = 0)"
+        />
+        <input
+          v-model="second"
+          type="number"
+          min="0"
+          max="59"
+          @blur="second ? (second = second) : (second = 0)"
+        />
+      </div>
+    </div>
+    <div class="btn-section">
+      <button @click.stop="resetCount">reset</button>
+      <button v-if="isStop" @click.stop="stopCount">stop</button>
+      <button
+        v-else
+        @click.stop="startCount"
+        :disabled="isStart"
+        :class="{ disabled: isStart }"
+      >
+        start
+      </button>
+      <button v-if="isEnd" @click.stop="endCount">finished</button>
+    </div>
+  </section>
+</template>
+
+<script>
+import { ref } from "@vue/reactivity";
+import { computed } from "@vue/runtime-core";
+
+export default {
+  setup() {
+    const hour = ref(0);
+    const minute = ref(0);
+    const second = ref(0);
+    const time = ref(0);
+    const counter = ref(null);
+    const isStart = computed(() => {
+      return hour.value === 0 && minute.value === 0 && second.value === 0;
+    });
+    const isStop = ref(false);
+    const isEnd = ref(false);
+    const ringtone = new Audio(
+      "http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3"
+    );
+
+    const startCount = () => {
+      isStop.value = !isStop.value;
+      time.value =
+        Number.parseInt(hour.value * 60 * 60) +
+        Number.parseInt(minute.value * 60) +
+        Number.parseInt(second.value);
+      window.clearInterval(counter.value);
+      counter.value = setInterval(() => {
+        if (time.value !== 0) {
+          time.value -= 1;
+          hour.value = Math.floor(time.value / 60 / 60);
+          minute.value = Math.floor(time.value / 60);
+          second.value = time.value % 60;
+        } else {
+          ringtone.play();
+          ringtone.loop = true;
+          isStop.value = false;
+          isEnd.value = true;
+        }
+      }, 1000);
+    };
+    const stopCount = () => {
+      isStop.value = !isStop.value;
+      console.log("stop");
+      window.clearInterval(counter.value);
+    };
+    const endCount = () => {
+      console.log("end");
+      ringtone.pause();
+      isEnd.value = false;
+      window.clearInterval(counter.value);
+    };
+    const resetCount = () => {
+      console.log("reset");
+      hour.value = 0;
+      minute.value = 0;
+      second.value = 0;
+    };
+    return {
+      hour,
+      minute,
+      second,
+      isStart,
+      isStop,
+      isEnd,
+      startCount,
+      stopCount,
+      endCount,
+      resetCount,
+    };
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.todo-counter {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  grid-row: span 2;
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  .title {
+    text-align: center;
+    padding: 1rem;
+    font-size: 2rem;
+  }
+  .counter {
+    width: 100%;
+    height: 100%;
+    .tomato {
+      text-align: center;
+      width: 35vw;
+      height: 35vw;
+      line-height: 35vw;
+      margin: 0 auto;
+      background-color: #fd8d8d;
+      border-radius: 50%;
+    }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    input {
+      width: 8vw;
+      height: 8vw;
+      font-size: 3rem;
+      text-align: center;
+    }
+    input:nth-child(2) {
+      margin: 0 1rem;
+    }
+  }
+  .btn-section {
+    text-align: center;
+    button {
+      width: 150px;
+      height: 80px;
+      font-size: 1.25rem;
+      border: none;
+      border-radius: 30px;
+      background-color: var(--main-color);
+      cursor: pointer;
+    }
+    button:nth-child(2),
+    button:nth-child(3) {
+      margin: 0 1rem;
+    }
+    button.disabled {
+      background-color: var(--main-light);
+    }
+  }
+}
+</style>

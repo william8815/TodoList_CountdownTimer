@@ -2,8 +2,8 @@
   <Header />
   <main class="todo">
     <TodoSet @afterSubmit="handleSubmit" />
-    <div>todoclock</div>
-    <TodoList :initial_list="list" />
+    <TodoCounter />
+    <TodoList :initial_list="list" @deleteTodo="handleDelete" />
   </main>
 </template>
 
@@ -11,8 +11,15 @@
 import Header from "./../components/TodoHeader.vue";
 import TodoSet from "./../components/TodoSet.vue";
 import TodoList from "./../components/TodoList.vue";
+import TodoCounter from "./../components/TodoCounter.vue";
 import app from "./../utils/firebase";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 import { onBeforeMount } from "@vue/runtime-core";
 import { ref } from "@vue/reactivity";
 export default {
@@ -20,6 +27,7 @@ export default {
     Header,
     TodoSet,
     TodoList,
+    TodoCounter,
   },
   setup() {
     const store = getFirestore(app);
@@ -39,15 +47,20 @@ export default {
       });
       isLoading.value = false;
     };
-    onBeforeMount(getList);
     const handleSubmit = (state) => {
       isLoading.value = state;
       list.value.splice(0, list.value.length);
       getList();
       isLoading.value = false;
     };
+    const handleDelete = async (id) => {
+      await deleteDoc(doc(store, "list", id));
+    };
+    onBeforeMount(getList);
+
     return {
       handleSubmit,
+      handleDelete,
       isLoading,
       list,
     };

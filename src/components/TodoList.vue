@@ -15,7 +15,7 @@
           >已完成</span
         >
       </div>
-      <span class="tab">全部刪除</span>
+      <span class="tab" @click="deleteAllTodo">全部刪除</span>
     </div>
     <div class="list scrollbar">
       <div v-if="isLoading">...Loading</div>
@@ -30,7 +30,10 @@
           <div class="btn-section">
             <button class="btn"><i class="icon fa-solid fa-pen"></i></button>
             <button class="btn">
-              <i class="icon trash fa-solid fa-trash"></i>
+              <i
+                class="icon trash fa-solid fa-trash"
+                @click="deleteTodo(item.id)"
+              ></i>
             </button>
           </div>
         </li>
@@ -42,11 +45,12 @@
 <script>
 import { onBeforeMount, watch } from "@vue/runtime-core";
 import { ref } from "@vue/reactivity";
+
 export default {
   props: {
     initial_list: Array,
   },
-  setup(props) {
+  setup(props, { emit }) {
     const list = ref([]);
     const isLoading = ref(false);
     const isActive = ref(false);
@@ -60,7 +64,7 @@ export default {
       isLoading.value = false;
     };
     onBeforeMount(showList);
-
+    // function (event)
     const filterUnfinished = () => {
       isActive.value = false;
       list.value = props.initial_list.filter(
@@ -73,6 +77,21 @@ export default {
         (item) => item.isFinished === true
       );
     };
+    const deleteTodo = async (id) => {
+      if (confirm("確定刪除此清單?")) {
+        emit("deleteTodo", id);
+        list.value = props.initial_list.filter((item) => item.id !== id);
+      }
+    };
+    const deleteAllTodo = () => {
+      if (confirm("確定刪除所有清單?")) {
+        list.value.forEach((item) => {
+          emit("deleteTodo", item.id);
+        });
+        list.value = list.value.splice(0, list.value);
+      }
+    };
+
     watch(props.initial_list, () => {
       showList();
     });
@@ -84,6 +103,8 @@ export default {
       isActive,
       filterUnfinished,
       filterFinished,
+      deleteTodo,
+      deleteAllTodo,
     };
   },
 };
@@ -97,6 +118,7 @@ export default {
   background: rgba($color: #fff, $alpha: 0.5);
   border-radius: 20px;
   padding: 1rem;
+  box-shadow: 0 0 15px 2px #fff;
   /* tabs */
   .filter-bar {
     display: flex;
