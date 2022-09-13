@@ -28,7 +28,15 @@
             <span>{{ item.title }}</span>
           </div>
           <div class="btn-section">
-            <button class="btn"><i class="icon fa-solid fa-pen"></i></button>
+            <button v-if="isActive" class="btn">
+              <i
+                class="icon fa-solid fa-rotate-left"
+                @click="restoreTodo(item.id)"
+              ></i>
+            </button>
+            <button v-else class="btn">
+              <i class="icon fa-solid fa-pen"></i>
+            </button>
             <button class="btn">
               <i
                 class="icon trash fa-solid fa-trash"
@@ -44,54 +52,75 @@
 
 <script>
 import { onBeforeMount, watch } from "@vue/runtime-core";
-import { ref } from "@vue/reactivity";
+import { ref, computed } from "@vue/reactivity";
 
 export default {
   props: {
     initial_list: Array,
   },
   setup(props, { emit }) {
-    const list = ref([]);
-    const isLoading = ref(false);
     const isActive = ref(false);
+    const unFinishedList = ref([]);
+    const finishedList = ref([]);
+    const list = computed(() => {
+      return isActive.value ? finishedList.value : unFinishedList.value;
+    });
+    const isLoading = ref(false);
 
     const showList = () => {
-      isLoading.value = true;
-      list.value = props.initial_list.map((item) => ({
-        ...item,
-      }));
       console.log(props.initial_list);
+      isLoading.value = true;
+      finishedList.value = props.initial_list.filter(
+        (item) => item.isFinished === true
+      );
+
+      unFinishedList.value = props.initial_list.filter(
+        (item) => item.isFinished === false
+      );
+
       isLoading.value = false;
     };
     onBeforeMount(showList);
-    // function (event)
+    // todo filter
     const filterUnfinished = () => {
       isActive.value = false;
-      list.value = props.initial_list.filter(
-        (item) => item.isFinished === false
-      );
     };
     const filterFinished = () => {
       isActive.value = true;
-      list.value = props.initial_list.filter(
-        (item) => item.isFinished === true
-      );
     };
+    // todo function
     const deleteTodo = async (id) => {
       if (confirm("確定刪除此清單?")) {
         emit("deleteTodo", id);
-        list.value = props.initial_list.filter((item) => item.id !== id);
+        // list.value = list.value.filter((item) => item.id !== id);
       }
     };
     const deleteAllTodo = () => {
       if (confirm("確定刪除所有清單?")) {
-        list.value.forEach((item) => {
-          emit("deleteTodo", item.id);
-        });
-        list.value = list.value.splice(0, list.value);
+        if (isActive.value) {
+          finishedList.value.forEach((item) => {
+            emit("deleteTodo", item.id);
+          });
+          finishedList.value = finishedList.value.splice(0, finishedList.value);
+        } else {
+          unFinishedList.value.forEach((item) => {
+            emit("deleteTodo", item.id);
+          });
+          unFinishedList.value = unFinishedList.value.splice(
+            0,
+            unFinishedList.value
+          );
+        }
       }
     };
-
+    const restoreTodo = async (id) => {
+      if (confirm("確定復原此清單?")) {
+        emit("restoreTodo", id);
+        finishedList.value = finishedList.value.filter(
+          (item) => item.id !== id
+        );
+      }
+    };
     watch(props.initial_list, () => {
       showList();
     });
@@ -105,6 +134,7 @@ export default {
       filterFinished,
       deleteTodo,
       deleteAllTodo,
+      restoreTodo,
     };
   },
 };

@@ -23,6 +23,7 @@
 
 <script>
 import { ref } from "@vue/reactivity";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -30,17 +31,24 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import app from "./../utils/firebase";
+import { onBeforeMount } from "@vue/runtime-core";
 export default {
   setup(props, context) {
+    const auth = getAuth(app);
     const store = getFirestore(app);
     const thing = ref("");
     const date = ref("");
     const isLoading = ref(false);
+    const userId = ref("");
+    const setUserId = onAuthStateChanged(auth, (user) => {
+      userId.value = user.uid;
+    });
+    onBeforeMount(setUserId);
     const addTodo = async () => {
       try {
         isLoading.value = true;
         context.emit("afterSubmit", true);
-        await addDoc(collection(store, "list"), {
+        await addDoc(collection(store, `${userId.value}`), {
           title: thing.value,
           date: date.value,
           isFinished: false,

@@ -3,7 +3,11 @@
   <main class="todo">
     <TodoSet @afterSubmit="handleSubmit" />
     <TodoCounter />
-    <TodoList :initial_list="list" @deleteTodo="handleDelete" />
+    <TodoList
+      :initial_list="list"
+      @deleteTodo="handleDelete"
+      @restoreTodo="handleRestore"
+    />
   </main>
 </template>
 
@@ -13,12 +17,14 @@ import TodoSet from "./../components/TodoSet.vue";
 import TodoList from "./../components/TodoList.vue";
 import TodoCounter from "./../components/TodoCounter.vue";
 import app from "./../utils/firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore,
   collection,
   getDocs,
   doc,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { onBeforeMount } from "@vue/runtime-core";
 import { ref } from "@vue/reactivity";
@@ -30,38 +36,53 @@ export default {
     TodoCounter,
   },
   setup() {
+    const auth = getAuth(app);
     const store = getFirestore(app);
     const list = ref([]);
     const isLoading = ref(false);
-    const getList = async () => {
-      isLoading.value = true;
-      const querySnapshot = await getDocs(collection(store, "list"));
-      querySnapshot.forEach((doc) => {
-        list.value.push({
-          id: doc.id,
-          title: doc.data().title,
-          date: doc.data().date,
-          createdAt: doc.data().createdAt,
-          isFinished: doc.data().isFinished,
+    const userId = ref("");
+    const setUser = onAuthStateChanged(auth, async (user) => {
+      userId.value = user.uid;
+    });
+    const getList = () => {
+      list.value.splice(0, list.value.length);
+      onAuthStateChanged(auth, async (user) => {
+        const querySnapshot = await getDocs(collection(store, `${user.uid}`));
+        querySnapshot.forEach((doc) => {
+          list.value.push({
+            id: doc.id,
+            title: doc.data().title,
+            date: doc.data().date,
+            createdAt: doc.data().createdAt,
+            isFinished: doc.data().isFinished,
+          });
         });
       });
-      isLoading.value = false;
     };
     const handleSubmit = (state) => {
       isLoading.value = state;
-      list.value.splice(0, list.value.length);
       getList();
       isLoading.value = false;
     };
     const handleDelete = async (id) => {
-      await deleteDoc(doc(store, "list", id));
+      await deleteDoc(doc(store, `${userId.value}`, id));
+      getList();
+      console.log(list.value);
     };
+    const handleRestore = async (id) => {
+      await updateDoc(doc(store, `${userId.value}`, id), {
+        isFinished: false,
+      });
+      getList();
+    };
+
+    onBeforeMount(setUser);
     onBeforeMount(getList);
 
     return {
       handleSubmit,
       handleDelete,
-      isLoading,
+      handleRestore,
       list,
     };
   },
