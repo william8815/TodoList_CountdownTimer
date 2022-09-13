@@ -2,12 +2,12 @@
   <Header />
   <main class="todo">
     <TodoSet @afterSubmit="handleSubmit" />
-    <TodoCounter />
     <TodoList
       :initial_list="list"
       @deleteTodo="handleDelete"
       @restoreTodo="handleRestore"
     />
+    <TodoCounter @finishedTodo="handleFinishedTodo" />
   </main>
 </template>
 
@@ -44,6 +44,7 @@ export default {
     const setUser = onAuthStateChanged(auth, async (user) => {
       userId.value = user.uid;
     });
+
     const getList = () => {
       list.value.splice(0, list.value.length);
       onAuthStateChanged(auth, async (user) => {
@@ -59,6 +60,7 @@ export default {
         });
       });
     };
+    // handle listener
     const handleSubmit = (state) => {
       isLoading.value = state;
       getList();
@@ -75,6 +77,12 @@ export default {
       });
       getList();
     };
+    const handleFinishedTodo = async (listId) => {
+      await updateDoc(doc(store, `${userId.value}`, listId), {
+        isFinished: true,
+      });
+      getList();
+    };
 
     onBeforeMount(setUser);
     onBeforeMount(getList);
@@ -83,6 +91,7 @@ export default {
       handleSubmit,
       handleDelete,
       handleRestore,
+      handleFinishedTodo,
       list,
     };
   },
@@ -91,16 +100,20 @@ export default {
 
 <style lang="scss" scoped>
 .todo {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 1rem;
   width: 100%;
-  height: calc(100vh - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
   padding: 1rem;
 }
 @media screen and (min-width: 768px) {
   .todo {
-    display: grid;
+    height: calc(100vh - 80px);
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr;
-    gap: 1rem;
   }
 }
 </style>

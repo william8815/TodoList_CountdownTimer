@@ -46,6 +46,7 @@ export default {
 header {
   width: 100%;
   max-width: 1400px;
+  margin: 0 auto;
   height: 80px;
   padding: 1rem;
   display: flex;

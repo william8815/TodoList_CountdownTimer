@@ -1,6 +1,6 @@
 <template>
   <section class="todo-counter">
-    <h1 class="title">面試</h1>
+    <h1 class="title">{{ isLoading ? "" : list.title }}</h1>
     <div class="counter">
       <div class="tomato">
         <input
@@ -44,10 +44,10 @@
 
 <script>
 import { ref } from "@vue/reactivity";
-import { computed } from "@vue/runtime-core";
-
+import { computed, watch } from "@vue/runtime-core";
+import { useStore } from "vuex";
 export default {
-  setup() {
+  setup(props, { emit }) {
     const hour = ref(0);
     const minute = ref(0);
     const second = ref(0);
@@ -61,6 +61,10 @@ export default {
     const ringtone = new Audio(
       "http://soundbible.com/mp3/Elevator Ding-SoundBible.com-685385892.mp3"
     );
+
+    const store = useStore();
+    const list = ref(store.state.list);
+    const isLoading = ref(false);
 
     const startCount = () => {
       isStop.value = !isStop.value;
@@ -84,22 +88,28 @@ export default {
       }, 1000);
     };
     const stopCount = () => {
+      window.clearInterval(counter.value);
       isStop.value = !isStop.value;
-      console.log("stop");
-      window.clearInterval(counter.value);
     };
-    const endCount = () => {
-      console.log("end");
+    const endCount = async () => {
       ringtone.pause();
-      isEnd.value = false;
       window.clearInterval(counter.value);
+      emit("finishedTodo", store.state.list.id);
+      store.commit("changeTitle", { id: "", title: "請選擇清單項目" });
+      isEnd.value = false;
     };
     const resetCount = () => {
-      console.log("reset");
+      window.clearInterval(counter.value);
       hour.value = 0;
       minute.value = 0;
       second.value = 0;
     };
+
+    watch(store.state, (newState) => {
+      console.log(newState.list);
+      list.value = newState.list;
+    });
+
     return {
       hour,
       minute,
@@ -107,6 +117,8 @@ export default {
       isStart,
       isStop,
       isEnd,
+      list,
+      isLoading,
       startCount,
       stopCount,
       endCount,
@@ -135,12 +147,16 @@ export default {
     height: 100%;
     .tomato {
       text-align: center;
-      width: 35vw;
-      height: 35vw;
-      line-height: 35vw;
+      width: 35vh;
+      height: 35vh;
+      line-height: 35vh;
       margin: 0 auto;
       background-color: #fd8d8d;
       border-radius: 50%;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
@@ -151,9 +167,9 @@ export default {
       -moz-appearance: textfield;
     }
     input {
-      width: 8vw;
-      height: 8vw;
-      font-size: 3rem;
+      width: 8vh;
+      height: 8vh;
+      font-size: 2rem;
       text-align: center;
     }
     input:nth-child(2) {
@@ -177,6 +193,27 @@ export default {
     }
     button.disabled {
       background-color: var(--main-light);
+    }
+  }
+}
+@media screen and (min-width: 768px) {
+  .todo-counter {
+    grid-column: 2/3;
+    height: 100vh;
+    .counter {
+      .tomato {
+        width: 100%;
+        max-width: 500px;
+        height: 100%;
+        max-height: 500px;
+      }
+      input {
+        width: 10vw;
+        height: 10vw;
+        max-width: 120px;
+        max-height: 120px;
+        font-size: 3rem;
+      }
     }
   }
 }

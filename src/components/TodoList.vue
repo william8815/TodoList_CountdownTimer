@@ -25,7 +25,9 @@
             <div>
               <i>{{ item.date }}</i>
             </div>
-            <span>{{ item.title }}</span>
+            <button @click="openCounter({ title: item.title, id: item.id })">
+              <span>{{ item.title }}</span>
+            </button>
           </div>
           <div class="btn-section">
             <button v-if="isActive" class="btn">
@@ -53,6 +55,7 @@
 <script>
 import { onBeforeMount, watch } from "@vue/runtime-core";
 import { ref, computed } from "@vue/reactivity";
+import { useStore } from "vuex";
 
 export default {
   props: {
@@ -66,6 +69,7 @@ export default {
       return isActive.value ? finishedList.value : unFinishedList.value;
     });
     const isLoading = ref(false);
+    const store = useStore();
 
     const showList = () => {
       console.log(props.initial_list);
@@ -92,7 +96,6 @@ export default {
     const deleteTodo = async (id) => {
       if (confirm("確定刪除此清單?")) {
         emit("deleteTodo", id);
-        // list.value = list.value.filter((item) => item.id !== id);
       }
     };
     const deleteAllTodo = () => {
@@ -121,6 +124,10 @@ export default {
         );
       }
     };
+    // title
+    const openCounter = ({ title, id }) => {
+      store.commit("changeTitle", { title, id });
+    };
     watch(props.initial_list, () => {
       showList();
     });
@@ -135,6 +142,7 @@ export default {
       deleteTodo,
       deleteAllTodo,
       restoreTodo,
+      openCounter,
     };
   },
 };
@@ -211,6 +219,13 @@ export default {
     font-size: 1.25rem;
     border-radius: 20px;
     margin-bottom: 1rem;
+    .list__text button {
+      font-size: 1.25rem;
+      font-weight: 700;
+      height: 40px;
+      border: none;
+      background-color: transparent;
+    }
   }
   .btn {
     width: 40px;
@@ -226,6 +241,12 @@ export default {
         color: rgb(200, 13, 13);
       }
     }
+  }
+}
+@media screen and (min-width: 768px) {
+  .todolist {
+    grid-column: 1/2;
+    grid-row: 2/3;
   }
 }
 </style>
