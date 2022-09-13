@@ -5,6 +5,7 @@ export default createStore({
     list: {
       id: "",
       title: "請選擇清單項目",
+      isClicked: false,
     },
   },
   getters: {},

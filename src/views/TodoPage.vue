@@ -41,7 +41,7 @@ export default {
     const list = ref([]);
     const isLoading = ref(false);
     const userId = ref("");
-    const setUser = onAuthStateChanged(auth, async (user) => {
+    const setUser = onAuthStateChanged(auth, (user) => {
       userId.value = user.uid;
     });
 
@@ -69,7 +69,6 @@ export default {
     const handleDelete = async (id) => {
       await deleteDoc(doc(store, `${userId.value}`, id));
       getList();
-      console.log(list.value);
     };
     const handleRestore = async (id) => {
       await updateDoc(doc(store, `${userId.value}`, id), {
@@ -78,6 +77,7 @@ export default {
       getList();
     };
     const handleFinishedTodo = async (listId) => {
+      console.log(listId);
       await updateDoc(doc(store, `${userId.value}`, listId), {
         isFinished: true,
       });

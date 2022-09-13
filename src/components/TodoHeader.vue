@@ -12,7 +12,7 @@
 import app from "./../utils/firebase";
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
 import router from "@/router";
-import { ref } from "@vue/runtime-core";
+import { onBeforeMount, ref } from "@vue/runtime-core";
 export default {
   setup() {
     const auth = getAuth(app);
@@ -24,14 +24,11 @@ export default {
         username.value = "使用者";
       }
     });
+    onBeforeMount(setuser);
     const signoutAccount = () => {
-      signOut(auth)
-        .then(() => {
-          router.push("/");
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      signOut(auth).then(() => {
+        router.push("/");
+      });
     };
     return {
       username,
@@ -59,7 +56,7 @@ header {
     display: flex;
     justify-content: space-between;
     &__name {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 700;
     }
     span {
@@ -75,6 +72,10 @@ header {
       border-radius: 15px;
       background-color: var(--main-color);
       color: #fff;
+      cursor: pointer;
+    }
+    .signout:hover {
+      background-color: var(--main-dark);
     }
   }
 }

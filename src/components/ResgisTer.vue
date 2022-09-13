@@ -64,7 +64,7 @@ export default {
     // function
     const onSubmit = () => {
       if (password.value !== passwordCheck.value) {
-        console.log("密碼有誤");
+        alert("密碼有誤");
         return;
       }
       isLoading.value = true;
@@ -77,7 +77,19 @@ export default {
           isLoading.value = false;
         })
         .catch((error) => {
-          console.log(error.code, error.message);
+          switch (error.code) {
+            case "auth/email-already-in-use":
+              alert("信箱已存在");
+              break;
+            case "auth/invalid-email":
+              alert("信箱格式不正確");
+              break;
+            case "auth/weak-password":
+              alert("密碼強度不足");
+              break;
+            default:
+              break;
+          }
           isLoading.value = false;
         });
     };

@@ -46,15 +46,25 @@ export default {
     const onSubmit = () => {
       isLoading.value = true;
       signInWithEmailAndPassword(auth, email.value, password.value)
-        .then((userCredential) => {
+        .then(() => {
           // Signed in
-          const user = userCredential.user;
-          console.log(user);
           router.push("/todo");
           isLoading.value = false;
         })
         .catch((error) => {
-          console.log(error.code, error.message);
+          switch (error.code) {
+            case "auth/user-not-found":
+              alert("信箱不存在");
+              break;
+            case "auth/invalid-email":
+              alert("信箱格式不正確");
+              break;
+            case "auth/wrong-password":
+              alert("密碼錯誤");
+              break;
+            default:
+              break;
+          }
           isLoading.value = false;
         });
     };

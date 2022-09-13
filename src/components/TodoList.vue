@@ -32,13 +32,13 @@
           <div class="btn-section">
             <button v-if="isActive" class="btn">
               <i
-                class="icon fa-solid fa-rotate-left"
+                class="icon restore fa-solid fa-rotate-left"
                 @click="restoreTodo(item.id)"
               ></i>
             </button>
-            <button v-else class="btn">
+            <!-- <button v-else class="btn">
               <i class="icon fa-solid fa-pen"></i>
-            </button>
+            </button> -->
             <button class="btn">
               <i
                 class="icon trash fa-solid fa-trash"
@@ -72,7 +72,6 @@ export default {
     const store = useStore();
 
     const showList = () => {
-      console.log(props.initial_list);
       isLoading.value = true;
       finishedList.value = props.initial_list.filter(
         (item) => item.isFinished === true
@@ -126,7 +125,7 @@ export default {
     };
     // title
     const openCounter = ({ title, id }) => {
-      store.commit("changeTitle", { title, id });
+      store.commit("changeTitle", { title, id, isClicked: true });
     };
     watch(props.initial_list, () => {
       showList();
@@ -225,6 +224,10 @@ export default {
       height: 40px;
       border: none;
       background-color: transparent;
+      cursor: pointer;
+    }
+    .list__text button:hover {
+      text-decoration: underline;
     }
   }
   .btn {
@@ -237,8 +240,12 @@ export default {
       height: 40px;
       line-height: 40px;
       font-size: 1rem;
-      &.trash {
+      cursor: pointer;
+      &.trash:hover {
         color: rgb(200, 13, 13);
+      }
+      &.restore:hover {
+        color: rgb(28, 146, 58);
       }
     }
   }

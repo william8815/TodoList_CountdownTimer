@@ -1,5 +1,6 @@
 <template>
   <section class="todo-counter">
+    <div v-if="!list.isClicked" class="ban-section"></div>
     <h1 class="title">{{ isLoading ? "" : list.title }}</h1>
     <div class="counter">
       <div class="tomato">
@@ -28,6 +29,7 @@
     </div>
     <div class="btn-section">
       <button @click.stop="resetCount">reset</button>
+
       <button v-if="isStop" @click.stop="stopCount">stop</button>
       <button
         v-else
@@ -37,7 +39,11 @@
       >
         start
       </button>
-      <button v-if="isEnd" @click.stop="endCount">finished</button>
+
+      <div>
+        <button v-if="isEnd" @click.stop="endCount">finished</button>
+        <button v-else class="white-btn"></button>
+      </div>
     </div>
   </section>
 </template>
@@ -95,7 +101,11 @@ export default {
       ringtone.pause();
       window.clearInterval(counter.value);
       emit("finishedTodo", store.state.list.id);
-      store.commit("changeTitle", { id: "", title: "請選擇清單項目" });
+      store.commit("changeTitle", {
+        id: "",
+        title: "請選擇清單項目",
+        isClicked: false,
+      });
       isEnd.value = false;
     };
     const resetCount = () => {
@@ -106,7 +116,6 @@ export default {
     };
 
     watch(store.state, (newState) => {
-      console.log(newState.list);
       list.value = newState.list;
     });
 
@@ -135,8 +144,10 @@ export default {
   background-color: #fff;
   grid-row: span 2;
   padding: 1rem;
+  border-radius: 20px;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  position: relative;
   .title {
     text-align: center;
     padding: 1rem;
@@ -145,6 +156,7 @@ export default {
   .counter {
     width: 100%;
     height: 100%;
+    padding-bottom: 1rem;
     .tomato {
       text-align: center;
       width: 35vh;
@@ -153,7 +165,7 @@ export default {
       margin: 0 auto;
       background-color: #fd8d8d;
       border-radius: 50%;
-      margin-bottom: 1rem;
+
       display: flex;
       align-items: center;
       justify-content: center;
@@ -177,9 +189,11 @@ export default {
     }
   }
   .btn-section {
-    text-align: center;
+    display: flex;
+    justify-content: space-around;
     button {
-      width: 150px;
+      width: 10vw;
+      max-width: 200px;
       height: 80px;
       font-size: 1.25rem;
       border: none;
@@ -194,12 +208,26 @@ export default {
     button.disabled {
       background-color: var(--main-light);
     }
+    .white-btn {
+      background-color: transparent;
+    }
   }
+}
+.todo-counter .ban-section {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba($color: #333, $alpha: 0.5);
+  border-radius: 20px;
+  z-index: 2;
 }
 @media screen and (min-width: 768px) {
   .todo-counter {
     grid-column: 2/3;
-    height: 100vh;
+    /* height: 100vh; */
     .counter {
       .tomato {
         width: 100%;

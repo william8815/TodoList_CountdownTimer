@@ -74,8 +74,10 @@ export default {
       cursor: pointer;
     }
     .btn:hover {
+      border: 2px solid var(--main-dark);
       background-color: var(--main-light);
       transition: background-color 0.3s ease-in-out;
+      color: var(--main-dark);
     }
   }
   .btn-section {
@@ -83,7 +85,7 @@ export default {
     button {
       margin: 1rem 0;
       font-size: 1rem;
-      background-color: #fff;
+      background-color: transparent;
       border: none;
       color: blue;
       text-decoration: underline;
